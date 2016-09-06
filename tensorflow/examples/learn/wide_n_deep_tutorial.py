@@ -22,6 +22,21 @@ from six.moves import urllib
 
 import pandas as pd
 import tensorflow as tf
+from tensorflow.contrib.layers.python.layers.feature_column import _EmbeddingColumn
+
+class _MonkeyEmbeddingColumn(_EmbeddingColumn):
+  # override the key property
+  @property
+  def key(self):
+    return "{}".format(self)
+
+def monkey_embedding_column(sparse_id_column,
+                     dimension,
+                     combiner="mean",
+                     initializer=None,
+                     ckpt_to_load_from=None,
+                     tensor_name_in_ckpt=None):
+  return _MonkeyEmbeddingColumn(sparse_id_column, dimension)
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -122,16 +137,16 @@ def build_estimator(model_dir):
                   tf.contrib.layers.crossed_column([native_country, occupation],
                                                    hash_bucket_size=int(1e4))]
   deep_columns = [
-      tf.contrib.layers.embedding_column(workclass, dimension=8),
-      tf.contrib.layers.embedding_column(education, dimension=8),
-      tf.contrib.layers.embedding_column(marital_status,
+      monkey_embedding_column(workclass, dimension=8),
+      monkey_embedding_column(education, dimension=8),
+      monkey_embedding_column(marital_status,
                                          dimension=8),
-      tf.contrib.layers.embedding_column(gender, dimension=8),
-      tf.contrib.layers.embedding_column(relationship, dimension=8),
-      tf.contrib.layers.embedding_column(race, dimension=8),
-      tf.contrib.layers.embedding_column(native_country,
+      monkey_embedding_column(gender, dimension=8),
+      monkey_embedding_column(relationship, dimension=8),
+      monkey_embedding_column(race, dimension=8),
+      monkey_embedding_column(native_country,
                                          dimension=8),
-      tf.contrib.layers.embedding_column(occupation, dimension=8),
+      monkey_embedding_column(occupation, dimension=8),
       age,
       education_num,
       capital_gain,
